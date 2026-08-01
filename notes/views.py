@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Note  
 from .forms import NoteForm
+from django.views.decorators.http import require_http_methods
 
 def notes_list(request):
     notes = Note.objects.all()
@@ -30,3 +31,14 @@ def note_edit(request, note_id):
     else:
         form = NoteForm(instance=note)
     return render(request, 'notes/form.html', {'form': form, 'title': 'Редактировать заметку'})
+
+# НОВАЯ ВЬЮХА — УДАЛЕНИЕ
+@require_http_methods(["GET", "POST"])
+def note_delete(request, note_id):
+    note = get_object_or_404(Note, pk=note_id)
+
+    if request.method == 'POST':
+        note.delete()
+        return redirect('notes_list')
+
+    return render(request, 'notes/confirm_delete.html', {'note': note})
